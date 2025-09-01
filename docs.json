@@ -3,9 +3,9 @@
   "theme": "willow",
   "name": "Farmsync Documentation",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#06B6D4",
+    "light":   "#A5F3FC",
+    "dark":    "#0E7490"
   },
   "favicon": "/favicon.ico",
   "navigation": {
