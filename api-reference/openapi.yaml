@@ -1,0 +1,1877 @@
+schemes: []
+swagger: '2.0'
+info:
+  description: Swagger for Farmsync Backend API
+  title: Farmsync Backend API
+  termsOfService: http://swagger.io/terms/
+  contact:
+    name: API Support
+    email: support@farmsync.cloud
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: '1.0'
+host: api.farmsync.cloud
+basePath: /
+paths:
+  /api/self/accounts:
+    get:
+      description: Returns all Roblox accounts for the authenticated user, or for the parent user if a subuser, respecting device and permission constraints.
+      produces:
+        - application/json
+      tags:
+        - accounts
+      summary: List accounts
+      responses:
+        '200':
+          description: List of accounts
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/models.RobloxAccount'
+        '500':
+          description: Failed to get accounts
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+      security:
+        - BearerAuth: []
+    post:
+      description: Creates a new Roblox account for the authenticated user or parent user, validating device, config, and folder ownership and subuser permissions.
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - accounts
+      summary: Create account
+      parameters:
+        - description: Account payload
+          name: body
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/controllers_web_self.CreateAccountArgs'
+      responses:
+        '200':
+          description: Created account
+          schema:
+            $ref: '#/definitions/models.RobloxAccount'
+        '400':
+          description: Invalid request or account already exists
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        '401':
+          description: Unauthorized or invalid foreign references
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        '500':
+          description: Failed to create account
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+      security:
+        - BearerAuth: []
+  /api/self/accounts/bulk:
+    put:
+      description: Bulk updates multiple Roblox accounts for the authenticated user or parent user, validating device/config/folder ownership and subuser permissions.
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - accounts
+      summary: Bulk update accounts
+      parameters:
+        - description: Accounts to update
+          name: body
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/controllers_web_self.UpdateAccountsArgs'
+      responses:
+        '200':
+          description: Bulk update result and updated accounts
+          schema:
+            type: object
+            additionalProperties: true
+        '400':
+          description: Invalid request arguments
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        '500':
+          description: Failed to update accounts
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+      security:
+        - BearerAuth: []
+    post:
+      description: Creates multiple Roblox accounts for the authenticated user or parent user, validating ownership and skipping invalid entries.
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - accounts
+      summary: Bulk create accounts
+      parameters:
+        - description: Accounts payload
+          name: body
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/controllers_web_self.CreateAccountsArgs'
+      responses:
+        '200':
+          description: Summary and list of created accounts
+          schema:
+            type: object
+            additionalProperties: true
+        '400':
+          description: Invalid request arguments
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        '500':
+          description: Failed to create accounts
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+      security:
+        - BearerAuth: []
+    delete:
+      description: Deletes multiple Roblox accounts by username for the authenticated user or parent user, checking per-account device access for subusers.
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - accounts
+      summary: Bulk delete accounts
+      parameters:
+        - description: Accounts to delete (usernames)
+          name: body
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/controllers_web_self.DeleteAccountsArgs'
+      responses:
+        '200':
+          description: Summary of deleted accounts
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        '400':
+          description: Invalid request arguments
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        '500':
+          description: Failed to delete accounts
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+      security:
+        - BearerAuth: []
+  /api/self/accounts/distribute:
+    post:
+      description: Distributes unassigned Roblox accounts evenly across the specified devices for the authenticated user or parent user.
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - accounts
+      summary: Distribute accounts
+      parameters:
+        - description: Distribution parameters
+          name: body
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/controllers_web_self.DistributeAccountsArgs'
+      responses:
+        '200':
+          description: Distribution summary
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        '400':
+          description: Invalid request arguments or insufficient accounts
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        '500':
+          description: Failed to distribute accounts
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+      security:
+        - BearerAuth: []
+  /api/self/accounts/move:
+    post:
+      description: Moves one or more Roblox accounts to a specific folder or device, clearing the other reference, with ownership and permission checks.
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - accounts
+      summary: Move accounts
+      parameters:
+        - description: Move parameters
+          name: body
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/controllers_web_self.MoveAccounts'
+      responses:
+        '200':
+          description: Move summary
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        '400':
+          description: Invalid request arguments or no accounts found
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        '401':
+          description: Unauthorized or no access to target folder/device
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        '500':
+          description: Failed to move accounts
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+      security:
+        - BearerAuth: []
+  /api/self/accounts/unassigned:
+    get:
+      description: Returns all Roblox accounts that are not assigned to any device for the authenticated user or parent user.
+      produces:
+        - application/json
+      tags:
+        - accounts
+      summary: List unassigned accounts
+      responses:
+        '200':
+          description: List of unassigned accounts
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/models.RobloxAccount'
+        '500':
+          description: Failed to get accounts
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+      security:
+        - BearerAuth: []
+  /api/self/accounts/{username}:
+    get:
+      description: Returns a single Roblox account by username if it belongs to the authenticated user or accessible parent user/device.
+      produces:
+        - application/json
+      tags:
+        - accounts
+      summary: Get account
+      parameters:
+        - type: string
+          description: Account username
+          name: username
+          in: path
+          required: true
+      responses:
+        '200':
+          description: Account details
+          schema:
+            $ref: '#/definitions/models.RobloxAccount'
+        '401':
+          description: Unauthorized or no access to account's device
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        '500':
+          description: Failed to get account
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+      security:
+        - BearerAuth: []
+    put:
+      description: Partially updates fields on a Roblox account, respecting subuser permissions for passwords, cookies, devices, configs and folders.
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - accounts
+      summary: Update account
+      parameters:
+        - type: string
+          description: Account username
+          name: username
+          in: path
+          required: true
+        - description: Fields to update
+          name: body
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/controllers_web_self.UpdateAccountArgs'
+      responses:
+        '200':
+          description: Updated account
+          schema:
+            $ref: '#/definitions/models.RobloxAccount'
+        '400':
+          description: Invalid request arguments
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        '401':
+          description: Unauthorized
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        '500':
+          description: Failed to get or update account
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+      security:
+        - BearerAuth: []
+    delete:
+      description: Deletes a Roblox account by username if it belongs to the authenticated user or accessible parent user/device.
+      produces:
+        - application/json
+      tags:
+        - accounts
+      summary: Delete account
+      parameters:
+        - type: string
+          description: Account username
+          name: username
+          in: path
+          required: true
+      responses:
+        '200':
+          description: Account deleted
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        '400':
+          description: Account not found
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        '401':
+          description: Unauthorized
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        '500':
+          description: Failed to get or delete account
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+      security:
+        - BearerAuth: []
+  /api/self/autochangeconfigs:
+    get:
+      description: Returns all auto change configs for the authenticated user, or for the parent user if a subuser.
+      produces:
+        - application/json
+      tags:
+        - autochange-configs
+      summary: List auto change configs
+      responses:
+        '200':
+          description: List of auto change configs
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/models.AutoChangeConfig'
+        '500':
+          description: Failed to get auto change configs
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+      security:
+        - BearerAuth: []
+    post:
+      description: Creates a new auto change config for the authenticated user, or for the parent user if a subuser with EditAutoChangeConfigs permission.
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - autochange-configs
+      summary: Create auto change config
+      parameters:
+        - description: Auto change config payload
+          name: body
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/controllers_web_self.CreateAutoChangeConfigRequest'
+      responses:
+        '200':
+          description: Auto change config created successfully
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        '400':
+          description: Failed to parse body or missing fields
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        '403':
+          description: Subuser lacks permission to create autochange configs
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        '500':
+          description: Failed to create auto change config
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+      security:
+        - BearerAuth: []
+  /api/self/autochangeconfigs/place/{id}:
+    get:
+      description: Returns all auto change configs for the authenticated user (or its parent, if subuser) that match the given place ID.
+      produces:
+        - application/json
+      tags:
+        - autochange-configs
+      summary: List auto change configs by place ID
+      parameters:
+        - type: string
+          description: Place ID
+          name: id
+          in: path
+          required: true
+      responses:
+        '200':
+          description: List of auto change configs for the place ID
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/models.AutoChangeConfig'
+        '500':
+          description: Failed to get auto change configs
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+      security:
+        - BearerAuth: []
+  /api/self/autochangeconfigs/{id}:
+    get:
+      description: Returns a single auto change config by ID for the authenticated user, or for the parent user if a subuser.
+      produces:
+        - application/json
+      tags:
+        - autochange-configs
+      summary: Get auto change config
+      parameters:
+        - type: string
+          description: Auto change config ID
+          name: id
+          in: path
+          required: true
+      responses:
+        '200':
+          description: Auto change config details
+          schema:
+            $ref: '#/definitions/models.AutoChangeConfig'
+        '404':
+          description: Auto change config not found
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        '500':
+          description: Failed to get parent user
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+      security:
+        - BearerAuth: []
+    delete:
+      description: Deletes an auto change config by ID for the authenticated user, or for the parent user if a subuser with EditAutoChangeConfigs permission.
+      produces:
+        - application/json
+      tags:
+        - autochange-configs
+      summary: Delete auto change config
+      parameters:
+        - type: string
+          description: Auto change config ID
+          name: id
+          in: path
+          required: true
+      responses:
+        '200':
+          description: Auto change config deleted successfully
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        '403':
+          description: Subuser lacks permission to delete autochange configs
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        '404':
+          description: Auto change config not found
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        '500':
+          description: Failed to delete auto change config
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+      security:
+        - BearerAuth: []
+    patch:
+      description: Partially updates fields on an auto change config for the authenticated user, or for the parent user if a subuser with EditAutoChangeConfigs permission.
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - autochange-configs
+      summary: Update auto change config
+      parameters:
+        - type: string
+          description: Auto change config ID
+          name: id
+          in: path
+          required: true
+        - description: Fields to update
+          name: body
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/controllers_web_self.UpdateAutoChangeConfigRequest'
+      responses:
+        '200':
+          description: Auto change config updated successfully
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        '400':
+          description: Invalid data
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        '403':
+          description: Subuser lacks permission to update autochange configs
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        '404':
+          description: Auto change config not found
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        '500':
+          description: Failed to update auto change config
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+      security:
+        - BearerAuth: []
+  /api/self/configs:
+    get:
+      description: Returns all configs for the authenticated user, or for the parent user if a subuser.
+      produces:
+        - application/json
+      tags:
+        - configs
+      summary: List configs
+      responses:
+        '200':
+          description: List of configs
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/models.Config'
+        '500':
+          description: Failed to get configs
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+      security:
+        - BearerAuth: []
+    post:
+      description: Creates a new config for the authenticated user, or for the parent user if a subuser with EditConfigs permission.
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - configs
+      summary: Create config
+      parameters:
+        - description: Config payload
+          name: body
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/controllers_web_self.CreateConfigRequest'
+      responses:
+        '200':
+          description: Config created
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        '400':
+          description: Invalid data or name already exists
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        '403':
+          description: Subuser lacks permission to create configs
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        '500':
+          description: Failed to create config
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+      security:
+        - BearerAuth: []
+  /api/self/configs/{id}:
+    get:
+      description: Returns a single config by ID for the authenticated user, or for the parent user if a subuser.
+      produces:
+        - application/json
+      tags:
+        - configs
+      summary: Get config
+      parameters:
+        - type: string
+          description: Config ID
+          name: id
+          in: path
+          required: true
+      responses:
+        '200':
+          description: Config details
+          schema:
+            $ref: '#/definitions/models.Config'
+        '401':
+          description: Unauthorized
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        '404':
+          description: Config not found
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        '500':
+          description: Failed to get parent user
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+      security:
+        - BearerAuth: []
+    put:
+      description: Partially updates fields on a config for the authenticated user, or for the parent user if a subuser with EditConfigs permission.
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - configs
+      summary: Update config
+      parameters:
+        - type: string
+          description: Config ID
+          name: id
+          in: path
+          required: true
+        - description: Fields to update
+          name: body
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/controllers_web_self.UpdateConfigRequest'
+      responses:
+        '200':
+          description: Config updated
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        '400':
+          description: Invalid data
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        '401':
+          description: Unauthorized
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        '403':
+          description: Subuser lacks permission to edit configs
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        '404':
+          description: Config not found
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        '500':
+          description: Failed to update config
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+      security:
+        - BearerAuth: []
+    delete:
+      description: Deletes a config by ID for the authenticated user, or for the parent user if a subuser with EditConfigs permission.
+      produces:
+        - application/json
+      tags:
+        - configs
+      summary: Delete config
+      parameters:
+        - type: string
+          description: Config ID
+          name: id
+          in: path
+          required: true
+      responses:
+        '200':
+          description: Config deleted
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        '401':
+          description: Unauthorized
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        '403':
+          description: Subuser lacks permission to delete configs
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        '404':
+          description: Config not found
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        '500':
+          description: Failed to delete config
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+      security:
+        - BearerAuth: []
+  /api/self/configs/{id}/clone:
+    post:
+      description: Clones an existing config for the authenticated user, or for the parent user if a subuser with EditConfigs permission.
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - configs
+      summary: Clone config
+      parameters:
+        - type: string
+          description: Config ID to clone
+          name: id
+          in: path
+          required: true
+        - description: Clone payload
+          name: body
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/controllers_web_self.CloneConfigRequest'
+      responses:
+        '200':
+          description: Config cloned
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        '400':
+          description: Invalid data or name already exists
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        '401':
+          description: Unauthorized
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        '403':
+          description: Subuser lacks permission to clone configs
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        '404':
+          description: Config not found
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        '500':
+          description: Failed to clone config
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+      security:
+        - BearerAuth: []
+  /api/self/devices:
+    get:
+      description: Returns all devices for the authenticated user or subuser, respecting subuser permissions and assigned devices.
+      produces:
+        - application/json
+      tags:
+        - devices
+      summary: List devices
+      responses:
+        '200':
+          description: List of devices
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/models.DeviceResponse'
+        '500':
+          description: Failed to get devices
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+      security:
+        - BearerAuth: []
+    put:
+      description: Updates configuration for multiple devices owned by the authenticated user or accessible subuser.
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - devices
+      summary: Bulk update devices
+      parameters:
+        - description: Devices to update
+          name: body
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/controllers_web_devices.UpdateDevicesArgs'
+      responses:
+        '200':
+          description: Devices updated
+          schema:
+            type: object
+            additionalProperties: true
+        '400':
+          description: Invalid request arguments
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        '401':
+          description: Unauthorized
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        '500':
+          description: Failed to get or update device
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+      security:
+        - BearerAuth: []
+  /api/self/devices/{id}:
+    get:
+      description: Returns a single device by ID if the authenticated user or subuser has access.
+      produces:
+        - application/json
+      tags:
+        - devices
+      summary: Get device
+      parameters:
+        - type: string
+          description: Device ID
+          name: id
+          in: path
+          required: true
+      responses:
+        '200':
+          description: Device details
+          schema:
+            $ref: '#/definitions/models.DeviceResponse'
+        '401':
+          description: Unauthorized
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        '500':
+          description: Failed to get device
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+      security:
+        - BearerAuth: []
+    put:
+      description: Partially updates configuration fields of a device if the authenticated user or subuser has access.
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - devices
+      summary: Update device
+      parameters:
+        - type: string
+          description: Device ID
+          name: id
+          in: path
+          required: true
+        - description: Fields to update
+          name: body
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/controllers_web_devices.UpdateDeviceArgs'
+      responses:
+        '200':
+          description: Device updated
+          schema:
+            type: object
+            additionalProperties: true
+        '400':
+          description: Invalid request arguments
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        '401':
+          description: Unauthorized
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        '500':
+          description: Failed to get or update device
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+      security:
+        - BearerAuth: []
+  /api/self/devices/{id}/reset-key:
+    post:
+      description: Resets the device key for the specified device if the authenticated user or subuser has access.
+      produces:
+        - application/json
+      tags:
+        - devices
+      summary: Reset device key
+      parameters:
+        - type: string
+          description: Device ID
+          name: id
+          in: path
+          required: true
+      responses:
+        '200':
+          description: Device key reset successfully, returns new_key
+          schema:
+            type: object
+            additionalProperties: true
+        '401':
+          description: Unauthorized or no access to this device
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        '500':
+          description: Failed to get or update device key
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+      security:
+        - BearerAuth: []
+  /api/self/scripts:
+    get:
+      description: Returns all scripts for the authenticated user, or for the parent user if a subuser.
+      produces:
+        - application/json
+      tags:
+        - scripts
+      summary: List scripts
+      responses:
+        '200':
+          description: List of scripts
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/models.Script'
+        '500':
+          description: Failed to get scripts
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+      security:
+        - BearerAuth: []
+    post:
+      description: Creates a new script for the authenticated user, or for the parent user if a subuser with EditScripts permission.
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - scripts
+      summary: Create script
+      parameters:
+        - description: Script payload
+          name: body
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/controllers_web_self.CreateScriptRequest'
+      responses:
+        '200':
+          description: Script created
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        '400':
+          description: Invalid data or script name already exists
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        '403':
+          description: Subuser lacks permission to create scripts
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        '500':
+          description: Failed to create script
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+      security:
+        - BearerAuth: []
+  /api/self/scripts/{id}:
+    get:
+      description: Returns a single script by ID for the authenticated user, or for the parent user if a subuser.
+      produces:
+        - application/json
+      tags:
+        - scripts
+      summary: Get script
+      parameters:
+        - type: string
+          description: Script ID
+          name: id
+          in: path
+          required: true
+      responses:
+        '200':
+          description: Script details
+          schema:
+            $ref: '#/definitions/models.Script'
+        '401':
+          description: Unauthorized
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        '404':
+          description: Script not found
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        '500':
+          description: Failed to get parent user
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+      security:
+        - BearerAuth: []
+    put:
+      description: Updates a script's name and data for the authenticated user, or for the parent user if a subuser with EditScripts permission.
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - scripts
+      summary: Update script
+      parameters:
+        - type: string
+          description: Script ID
+          name: id
+          in: path
+          required: true
+        - description: Fields to update
+          name: body
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/controllers_web_self.UpdateScriptRequest'
+      responses:
+        '200':
+          description: Script updated
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        '400':
+          description: Invalid data
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        '401':
+          description: Unauthorized
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        '403':
+          description: Subuser lacks permission to edit scripts
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        '404':
+          description: Script not found
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        '500':
+          description: Failed to update script
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+      security:
+        - BearerAuth: []
+    delete:
+      description: Deletes a script by ID for the authenticated user, or for the parent user if a subuser with EditScripts permission.
+      produces:
+        - application/json
+      tags:
+        - scripts
+      summary: Delete script
+      parameters:
+        - type: string
+          description: Script ID
+          name: id
+          in: path
+          required: true
+      responses:
+        '200':
+          description: Script deleted
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        '401':
+          description: Unauthorized
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        '403':
+          description: Subuser lacks permission to delete scripts
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        '404':
+          description: Script not found
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        '500':
+          description: Failed to delete script
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+      security:
+        - BearerAuth: []
+definitions:
+  controllers_web_devices.UpdateDeviceArgs:
+    type: object
+    properties:
+      auto_execute_path:
+        type: string
+      auto_rearrange:
+        type: boolean
+      auto_reclone:
+        type: boolean
+      auto_rejoin_on_ram_threshold:
+        type: boolean
+      auto_restart:
+        type: boolean
+      auto_set_affinity:
+        type: boolean
+      auto_set_power_plan:
+        type: boolean
+      auto_set_priority:
+        type: boolean
+      backup_download_link:
+        type: string
+      cpu_saver:
+        type: boolean
+      cpu_saver_level:
+        type: integer
+      device_note:
+        description: DeviceName string `json:"device_name" bson:"device_name"`
+        type: string
+      idle_minutes:
+        type: integer
+      is_enabled:
+        type: boolean
+      launch_loop:
+        type: integer
+      live_screen:
+        type: boolean
+      login_loop:
+        type: integer
+      max_concurrent_joins:
+        type: integer
+      max_concurrent_logins:
+        type: integer
+      ram_threshold:
+        type: integer
+      reclone_disk_size_threshold:
+        type: integer
+      restart_interval:
+        type: integer
+  controllers_web_devices.UpdateDevicesArgs:
+    type: object
+    properties:
+      devices:
+        type: array
+        items:
+          $ref: '#/definitions/models.Device'
+  controllers_web_self.CloneConfigRequest:
+    type: object
+    properties:
+      name:
+        type: string
+  controllers_web_self.CreateAccountArgs:
+    type: object
+    properties:
+      config_id:
+        type: string
+      cookie:
+        type: string
+      device_id:
+        type: string
+      enabled:
+        type: boolean
+      folder_id:
+        type: string
+      password:
+        type: string
+      private_server_link:
+        type: string
+      unassigned:
+        type: boolean
+      username:
+        type: string
+  controllers_web_self.CreateAccountsArgs:
+    type: object
+    properties:
+      accounts:
+        type: array
+        items:
+          $ref: '#/definitions/controllers_web_self.CreateAccountArgs'
+  controllers_web_self.CreateAutoChangeConfigRequest:
+    type: object
+    properties:
+      auto_change_config_place_id:
+        type: string
+      name:
+        type: string
+  controllers_web_self.CreateConfigRequest:
+    type: object
+    properties:
+      name:
+        type: string
+  controllers_web_self.CreateScriptRequest:
+    type: object
+    properties:
+      script_data:
+        type: string
+      script_name:
+        type: string
+  controllers_web_self.DeleteAccountsArgs:
+    type: object
+    properties:
+      accounts:
+        type: array
+        items:
+          type: string
+  controllers_web_self.DistributeAccountsArgs:
+    type: object
+    properties:
+      amount_per_device:
+        type: integer
+      device_ids:
+        type: array
+        items:
+          type: string
+  controllers_web_self.MoveAccounts:
+    type: object
+    properties:
+      device_id:
+        type: string
+      folder_id:
+        description: Can only be one of the 2 Folder or Device, if chose DeviceID then empty out the FolderID if FolderID is chose then empty out the DeviceID
+        type: string
+      usernames:
+        type: array
+        items:
+          type: string
+  controllers_web_self.UpdateAccountArgs:
+    type: object
+    properties:
+      config_id:
+        type: string
+      cookie:
+        type: string
+      dead_cookie:
+        type: boolean
+      device_id:
+        type: string
+      enabled:
+        type: boolean
+      error:
+        type: string
+      folder_id:
+        type: string
+      password:
+        type: string
+      private_server_link:
+        type: string
+      username:
+        type: string
+  controllers_web_self.UpdateAccountsArgs:
+    type: object
+    properties:
+      accounts:
+        type: array
+        items:
+          $ref: '#/definitions/controllers_web_self.UpdateAccountArgs'
+  controllers_web_self.UpdateAutoChangeConfigRequest:
+    type: object
+    properties:
+      auto_change_config_place_id:
+        type: string
+      change_data:
+        description: JSON string
+        type: string
+      change_without_replacement:
+        type: boolean
+      config_id:
+        type: string
+      final_config_id:
+        type: string
+      from_child_folder_id:
+        type: string
+      is_auto_change_config:
+        type: boolean
+      name:
+        type: string
+      to_child_folder_id:
+        type: string
+  controllers_web_self.UpdateConfigRequest:
+    type: object
+    properties:
+      auto_change_banned_accounts:
+        type: boolean
+      auto_change_configs_ids:
+        type: array
+        items:
+          type: string
+      auto_change_dead_cookie:
+        type: boolean
+      auto_clear_workspace:
+        type: boolean
+      auto_clone_workspace:
+        type: boolean
+      auto_get_private_server_link:
+        type: boolean
+      auto_kill_frozen_roblox:
+        type: boolean
+      auto_minimize_roblox:
+        type: boolean
+      banned_account_auto_change_folder_id:
+        type: string
+      change_banned_account_without_replacement:
+        type: boolean
+      change_dead_cookie_without_replacement:
+        type: boolean
+      dead_cookie_auto_change_folder_id:
+        type: string
+      enable_auto_change_configs:
+        type: boolean
+      execute_delay:
+        type: integer
+      join_low_players_server:
+        type: boolean
+      minimize_delay:
+        type: integer
+      name:
+        type: string
+      place_id:
+        type: string
+      private_server_link:
+        type: string
+      rejoin_if_script_error:
+        type: boolean
+      rejoin_on_fps:
+        type: boolean
+      rejoin_on_fps_timeout:
+        type: integer
+      rejoin_on_same_server:
+        type: boolean
+      script_ids:
+        type: array
+        items:
+          type: string
+      trackstats:
+        type: boolean
+      trackstats_interval:
+        type: integer
+      use_private_server:
+        type: boolean
+      wait_for_game_to_load:
+        type: boolean
+      workspace_download_link:
+        type: string
+      workspace_rename_enabled:
+        type: boolean
+      workspace_rename_file_path:
+        type: string
+      workspace_rename_format:
+        type: string
+  controllers_web_self.UpdateScriptRequest:
+    type: object
+    properties:
+      script_data:
+        type: string
+      script_name:
+        type: string
+  models.AutoChangeConfig:
+    type: object
+    properties:
+      auto_change_config_place_id:
+        type: string
+      change_data:
+        description: JSON string
+        type: string
+      change_without_replacement:
+        type: boolean
+      config_id:
+        type: string
+      final_config_id:
+        type: string
+      from_child_folder_id:
+        type: string
+      id:
+        type: string
+      is_auto_change_config:
+        type: boolean
+      name:
+        type: string
+      to_child_folder_id:
+        type: string
+      user_id:
+        type: string
+  models.Config:
+    type: object
+    properties:
+      auto_change_banned_accounts:
+        type: boolean
+      auto_change_configs_ids:
+        type: array
+        items:
+          type: string
+      auto_change_dead_cookie:
+        type: boolean
+      auto_clear_workspace:
+        type: boolean
+      auto_clone_workspace:
+        type: boolean
+      auto_get_private_server_link:
+        type: boolean
+      auto_kill_frozen_roblox:
+        type: boolean
+      auto_minimize_roblox:
+        type: boolean
+      banned_account_auto_change_folder_id:
+        type: string
+      change_banned_account_without_replacement:
+        type: boolean
+      change_dead_cookie_without_replacement:
+        type: boolean
+      dead_cookie_auto_change_folder_id:
+        type: string
+      enable_auto_change_configs:
+        type: boolean
+      execute_delay:
+        type: integer
+      id:
+        type: string
+      join_low_players_server:
+        type: boolean
+      minimize_delay:
+        type: integer
+      name:
+        type: string
+      place_id:
+        type: string
+      private_server_link:
+        type: string
+      rejoin_if_script_error:
+        type: boolean
+      rejoin_on_fps:
+        type: boolean
+      rejoin_on_fps_timeout:
+        type: integer
+      rejoin_on_same_server:
+        type: boolean
+      script_ids:
+        type: array
+        items:
+          type: string
+      trackstats:
+        type: boolean
+      trackstats_interval:
+        type: integer
+      use_private_server:
+        type: boolean
+      user_id:
+        type: string
+      wait_for_game_to_load:
+        type: boolean
+      workspace_download_link:
+        type: string
+      workspace_rename_enabled:
+        type: boolean
+      workspace_rename_file_path:
+        type: string
+      workspace_rename_format:
+        type: string
+  models.Device:
+    type: object
+    properties:
+      auto_execute_path:
+        type: string
+      auto_rearrange:
+        type: boolean
+      auto_reclone:
+        type: boolean
+      auto_rejoin_on_ram_threshold:
+        type: boolean
+      auto_restart:
+        type: boolean
+      auto_set_affinity:
+        type: boolean
+      auto_set_power_plan:
+        type: boolean
+      auto_set_priority:
+        type: boolean
+      backup_download_link:
+        type: string
+      client_running:
+        type: string
+      cpu_saver:
+        type: boolean
+      cpu_saver_level:
+        type: integer
+      device_key:
+        type: string
+      device_name:
+        type: string
+      device_note:
+        type: string
+      expires_at:
+        type: integer
+      group_id:
+        type: string
+      id:
+        type: string
+      idle_minutes:
+        type: integer
+      is_enabled:
+        type: boolean
+      last_updated:
+        type: integer
+      launch_loop:
+        type: integer
+      live_screen:
+        type: boolean
+      login_loop:
+        type: integer
+      max_concurrent_joins:
+        description: max_concurrent_joins and max_concurrent_logins
+        type: integer
+      max_concurrent_logins:
+        type: integer
+      need_human_intervention:
+        type: boolean
+      ram_threshold:
+        type: integer
+      reclone_disk_size_threshold:
+        type: integer
+      remote_endpoint:
+        type: string
+      restart_interval:
+        type: integer
+      user_id:
+        type: string
+  models.DeviceResponse:
+    type: object
+    properties:
+      active_accounts:
+        type: integer
+      auto_execute_path:
+        type: string
+      auto_rearrange:
+        type: boolean
+      auto_reclone:
+        type: boolean
+      auto_rejoin_on_ram_threshold:
+        type: boolean
+      auto_restart:
+        type: boolean
+      auto_set_affinity:
+        type: boolean
+      auto_set_power_plan:
+        type: boolean
+      auto_set_priority:
+        type: boolean
+      backup_download_link:
+        type: string
+      client_running:
+        type: string
+      cpu_saver:
+        type: boolean
+      cpu_saver_level:
+        type: integer
+      device_key:
+        type: string
+      device_name:
+        type: string
+      device_note:
+        type: string
+      expires_at:
+        type: integer
+      group_id:
+        type: string
+      group_name:
+        type: string
+      id:
+        type: string
+      idle_minutes:
+        type: integer
+      inactive_accounts:
+        type: integer
+      is_enabled:
+        type: boolean
+      last_updated:
+        type: integer
+      launch_loop:
+        type: integer
+      live_screen:
+        type: boolean
+      login_loop:
+        type: integer
+      max_concurrent_joins:
+        description: max_concurrent_joins and max_concurrent_logins
+        type: integer
+      max_concurrent_logins:
+        type: integer
+      need_human_intervention:
+        type: boolean
+      ram_threshold:
+        type: integer
+      reclone_disk_size_threshold:
+        type: integer
+      remote_endpoint:
+        type: string
+      restart_interval:
+        type: integer
+      total_accounts:
+        type: integer
+      user_id:
+        type: string
+  models.RobloxAccount:
+    type: object
+    properties:
+      config_id:
+        type: string
+      cookie:
+        type: string
+      data:
+        type: string
+      dead_cookie:
+        type: boolean
+      device_id:
+        type: string
+      enabled:
+        type: boolean
+      environment:
+        type: string
+      error:
+        type: string
+      folder_id:
+        type: string
+      game_instance_id:
+        type: string
+      id:
+        type: string
+      last_updated:
+        type: string
+      logged_in:
+        type: boolean
+      login_at:
+        description: Needed for autochange after .. days.. weeks.. months.. years
+        type: integer
+      password:
+        type: string
+      private_server_link:
+        type: string
+      rejoining:
+        type: boolean
+      running:
+        type: boolean
+      tag:
+        description: Optional tag for categorization
+        type: string
+      unassigned:
+        type: boolean
+      user_id:
+        type: string
+      username:
+        type: string
+  models.Script:
+    type: object
+    properties:
+      id:
+        type: string
+      last_modified:
+        type: integer
+      script_data:
+        type: string
+      script_name:
+        type: string
+      user_id:
+        type: string
+securityDefinitions:
+  BearerAuth:
+    description: 'Use "Authorization: Bearer {token}"'
+    type: apiKey
+    name: Authorization
+    in: header
